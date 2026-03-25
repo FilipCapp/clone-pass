@@ -1,57 +1,100 @@
 let currentMasterKey = null;
-const VAULT_ID = "global-vault-v1";
 
 async function deriveKey(password) {
     const enc = new TextEncoder();
-    const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+    const baseKey = await crypto.subtle.importKey(
+        "raw", 
+        enc.encode(password), 
+        "PBKDF2", 
+        false, 
+        ["deriveKey"]
+    );
     return crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: enc.encode("permanent-salt-v1"), iterations: 100000, hash: "SHA-256" },
-        baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+        { 
+            name: "PBKDF2", 
+            salt: enc.encode("clonepass-permanent-salt-v2"), 
+            iterations: 100000, 
+            hash: "SHA-256" 
+        },
+        baseKey, 
+        { name: "AES-GCM", length: 256 }, 
+        false, 
+        ["encrypt", "decrypt"]
     );
 }
 
-async function pushToCloud() {
-    const status = document.getElementById('syncStatus');
-    if (!window.db) return;
+async function handleAuth(type) {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('loginPass').value;
     
-    const vault = localStorage.getItem('vault');
+    if (!email || !pass) return alert("Please enter email and password");
+
     try {
-        await window.dbSet(window.dbDoc(window.db, "vaults", VAULT_ID), {
-            encryptedData: vault,
+        if (type === 'signup') {
+            await window.signUp(window.auth, email, pass);
+            alert("Account created! Now enter your Master Password to begin.");
+        } else {
+            await window.signIn(window.auth, email, pass);
+        }
+    } catch (e) {
+        alert("Auth Error: " + e.message);
+    }
+}
+
+function logout() {
+    window.auth.signOut().then(() => {
+        localStorage.clear();
+        location.reload();
+    });
+}
+
+async function pushToCloud() {
+    if (!window.currentUser || !window.db) return;
+    
+    const status = document.getElementById('syncStatus');
+    const vaultData = localStorage.getItem('vault');
+    
+    try {
+        await window.dbSet(window.dbDoc(window.db, "vaults", window.currentUser.uid), {
+            encryptedData: vaultData,
             updatedAt: new Date().toISOString()
         });
-        status.innerText = "Synced to Cloud";
+        status.innerText = "Cloud Synced";
         status.classList.add('sync-online');
     } catch (e) {
-        console.error("Cloud Error:", e);
-        status.innerText = "Sync Failed";
+        console.error("Sync failed:", e);
+        status.innerText = "Sync Error";
+        status.classList.remove('sync-online');
     }
 }
 
 async function pullFromCloud() {
-    if (!window.db) return;
+    if (!window.currentUser) return;
     try {
-        const docSnap = await window.dbGet(window.dbDoc(window.db, "vaults", VAULT_ID));
+        const docSnap = await window.dbGet(window.dbDoc(window.db, "vaults", window.currentUser.uid));
         if (docSnap.exists()) {
             localStorage.setItem('vault', docSnap.data().encryptedData);
             return true;
         }
-    } catch (e) { console.error("Pull Error:", e); }
+    } catch (e) {
+        console.error("Cloud pull failed:", e);
+    }
     return false;
 }
 
 async function unlockVault() {
     const pass = document.getElementById('masterPass').value;
-    if (!pass) return alert("Enter Master Password");
+    if (!pass) return alert("Master Password required to decrypt vault.");
 
     currentMasterKey = await deriveKey(pass);
     
     const status = document.getElementById('syncStatus');
-    status.innerText = "Syncing...";
+    status.innerText = "Fetching vault...";
     await pullFromCloud();
 
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainScreen').classList.remove('hidden');
+    
     loadVault();
 }
 
@@ -61,11 +104,15 @@ async function saveSecret() {
     const pass = document.getElementById('sitePass').value;
     const editIndex = parseInt(document.getElementById('editIndex').value);
 
-    if (!site || !user || !pass) return alert("All fields required");
+    if (!site || !user || !pass) return alert("Fill all fields");
 
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const sensitiveData = JSON.stringify({ user, pass });
-    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, new TextEncoder().encode(sensitiveData));
+    const encrypted = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv }, 
+        currentMasterKey, 
+        new TextEncoder().encode(sensitiveData)
+    );
 
     const entry = {
         site: site,
@@ -93,12 +140,18 @@ async function loadVault() {
         try {
             const iv = new Uint8Array(atob(item.iv).split("").map(c => c.charCodeAt(0)));
             const data = new Uint8Array(atob(item.data).split("").map(c => c.charCodeAt(0)));
-            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, data);
+            
+            const decrypted = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv }, 
+                currentMasterKey, 
+                data
+            );
+            
             const { user, pass } = JSON.parse(new TextDecoder().decode(decrypted));
 
             list.innerHTML += `
                 <div class="vault-item">
-                    <div class="item-info">
+                    <div>
                         <span class="item-site">${item.site}</span>
                         <span class="item-user">${user}</span>
                         <span class="item-pass">${pass}</span>
@@ -109,7 +162,11 @@ async function loadVault() {
                     </div>
                 </div>`;
         } catch (e) {
-            list.innerHTML = "<p style='color:red; text-align:center;'>Decryption Error. Wrong password?</p>";
+            console.error(e);
+            list.innerHTML = `<div class="card" style="border: 1px solid var(--danger)">
+                <p style="color: var(--danger)">🔓 Decryption Error</p>
+                <small>Check your Master Password.</small>
+            </div>`;
             break;
         }
     }
@@ -121,7 +178,6 @@ function editItem(index, site, user, pass) {
     document.getElementById('sitePass').value = pass;
     document.getElementById('editIndex').value = index;
     document.getElementById('formTitle').innerText = "Edit Account";
-    document.getElementById('saveBtn').innerText = "Update & Sync";
     document.getElementById('cancelBtn').classList.remove('hidden');
     window.scrollTo(0,0);
 }
@@ -132,12 +188,11 @@ function resetForm() {
     document.getElementById('sitePass').value = '';
     document.getElementById('editIndex').value = "-1";
     document.getElementById('formTitle').innerText = "Add Account";
-    document.getElementById('saveBtn').innerText = "Save & Sync";
     document.getElementById('cancelBtn').classList.add('hidden');
 }
 
 async function deleteItem(index) {
-    if (!confirm("Delete this entry?")) return;
+    if (!confirm("Delete this?")) return;
     let vault = JSON.parse(localStorage.getItem('vault') || "[]");
     vault.splice(index, 1);
     localStorage.setItem('vault', JSON.stringify(vault));
@@ -145,29 +200,8 @@ async function deleteItem(index) {
     await pushToCloud();
 }
 
-function exportVault() {
-    const data = localStorage.getItem('vault') || "[]";
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `vault_export.json`;
-    a.click();
-}
-
-function triggerImport() { document.getElementById('fileInput').click(); }
-
-function importVault(event) {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        localStorage.setItem('vault', e.target.result);
-        alert("Imported! Unlock to sync.");
-    };
-    reader.readAsText(event.target.files[0]);
-}
-
 function clearAll() {
-    if (confirm("Wipe all local data?")) {
+    if (confirm("Wipe local cache? (Cloud data remains safe)")) {
         localStorage.clear();
         location.reload();
     }
