@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClonePass v0.2.1 | Sync Enabled</title>
+    <title>ClonePass v0.2 | Sync Enabled</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
@@ -59,6 +59,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCheYVUMg42Q8Rul_6e3n0u4L1nC_8Kf8Y",
@@ -71,12 +72,22 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         window.db = db;
-        window.dbDoc = doc;
-        window.dbSet = setDoc;
-        window.dbGet = getDoc;
-        console.log("Firebase Ready");
+        window.auth = auth;
+        window.dbDoc = doc; window.dbSet = setDoc; window.dbGet = getDoc;
+        window.signIn = signInWithEmailAndPassword;
+        window.signUp = createUserWithEmailAndPassword;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('masterPassSection').classList.remove('hidden');
+            } else {
+                window.currentUser = null;
+            }
+        });
     </script>
     <script src="script.js"></script>
 </body>
