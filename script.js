@@ -56,7 +56,14 @@ async function loadVault() {
         try {
             const iv = new Uint8Array(atob(item.iv).split("").map(c => c.charCodeAt(0)));
             const data = new Uint8Array(atob(item.data).split("").map(c => c.charCodeAt(0)));
-            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, data);
+            
+            // This line throws an error if the Master Password is wrong
+            const decrypted = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv }, 
+                currentMasterKey, 
+                data
+            );
+            
             const { user, pass } = JSON.parse(new TextDecoder().decode(decrypted));
 
             list.innerHTML += `
@@ -72,7 +79,13 @@ async function loadVault() {
                     </div>
                 </div>`;
         } catch (e) {
-            list.innerHTML = "<p style='color:red;text-align:center;'>Encryption error. Reload and try again.</p>";
+            console.error("Decryption failed:", e);
+            list.innerHTML = `
+                <div class="card" style="border-color: var(--danger); text-align: center;">
+                    <p style="color: var(--danger);">🔓 Decryption Failed</p>
+                    <p style="font-size: 0.8rem;">Wrong Master Password or corrupted data.</p>
+                    <button onclick="location.reload()" class="btn-outline">Try Again</button>
+                </div>`;
             break;
         }
     }
