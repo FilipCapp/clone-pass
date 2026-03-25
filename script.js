@@ -1,4 +1,5 @@
 let currentMasterKey = null;
+let sessionPassword = "";
 
 async function deriveKey(password) {
     const enc = new TextEncoder();
@@ -12,7 +13,7 @@ async function deriveKey(password) {
     return crypto.subtle.deriveKey(
         { 
             name: "PBKDF2", 
-            salt: enc.encode("clonepass-permanent-salt-v2"), 
+            salt: enc.encode("clonepass-integrated-salt-v3"), 
             iterations: 100000, 
             hash: "SHA-256" 
         },
@@ -27,18 +28,41 @@ async function handleAuth(type) {
     const email = document.getElementById('email').value;
     const pass = document.getElementById('loginPass').value;
     
-    if (!email || !pass) return alert("Please enter email and password");
+    if (!email || !pass) return alert("Enter email and password");
+    
+    sessionPassword = pass; 
 
     try {
         if (type === 'signup') {
             await window.signUp(window.auth, email, pass);
-            alert("Account created! Now enter your Master Password to begin.");
+            alert("Account created! Opening vault...");
         } else {
             await window.signIn(window.auth, email, pass);
         }
+        
+        await autoUnlock(); 
     } catch (e) {
         alert("Auth Error: " + e.message);
     }
+}
+
+async function autoUnlock() {
+    if (!sessionPassword) {
+        alert("Session expired. Please log in again.");
+        return logout();
+    }
+
+    currentMasterKey = await deriveKey(sessionPassword);
+    sessionPassword = "";
+
+    const status = document.getElementById('syncStatus');
+    status.innerText = "Syncing...";
+    await pullFromCloud();
+
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainScreen').classList.remove('hidden');
+    
+    loadVault();
 }
 
 function logout() {
@@ -50,22 +74,14 @@ function logout() {
 
 async function pushToCloud() {
     if (!window.currentUser || !window.db) return;
-    
-    const status = document.getElementById('syncStatus');
     const vaultData = localStorage.getItem('vault');
-    
     try {
         await window.dbSet(window.dbDoc(window.db, "vaults", window.currentUser.uid), {
             encryptedData: vaultData,
             updatedAt: new Date().toISOString()
         });
-        status.innerText = "Cloud Synced";
-        status.classList.add('sync-online');
-    } catch (e) {
-        console.error("Sync failed:", e);
-        status.innerText = "Sync Error";
-        status.classList.remove('sync-online');
-    }
+        document.getElementById('syncStatus').innerText = "Cloud Synced";
+    } catch (e) { console.error(e); }
 }
 
 async function pullFromCloud() {
@@ -74,28 +90,8 @@ async function pullFromCloud() {
         const docSnap = await window.dbGet(window.dbDoc(window.db, "vaults", window.currentUser.uid));
         if (docSnap.exists()) {
             localStorage.setItem('vault', docSnap.data().encryptedData);
-            return true;
         }
-    } catch (e) {
-        console.error("Cloud pull failed:", e);
-    }
-    return false;
-}
-
-async function unlockVault() {
-    const pass = document.getElementById('masterPass').value;
-    if (!pass) return alert("Master Password required to decrypt vault.");
-
-    currentMasterKey = await deriveKey(pass);
-    
-    const status = document.getElementById('syncStatus');
-    status.innerText = "Fetching vault...";
-    await pullFromCloud();
-
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('mainScreen').classList.remove('hidden');
-    
-    loadVault();
+    } catch (e) { console.error(e); }
 }
 
 async function saveSecret() {
@@ -140,13 +136,7 @@ async function loadVault() {
         try {
             const iv = new Uint8Array(atob(item.iv).split("").map(c => c.charCodeAt(0)));
             const data = new Uint8Array(atob(item.data).split("").map(c => c.charCodeAt(0)));
-            
-            const decrypted = await crypto.subtle.decrypt(
-                { name: "AES-GCM", iv: iv }, 
-                currentMasterKey, 
-                data
-            );
-            
+            const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, data);
             const { user, pass } = JSON.parse(new TextDecoder().decode(decrypted));
 
             list.innerHTML += `
@@ -162,11 +152,7 @@ async function loadVault() {
                     </div>
                 </div>`;
         } catch (e) {
-            console.error(e);
-            list.innerHTML = `<div class="card" style="border: 1px solid var(--danger)">
-                <p style="color: var(--danger)">🔓 Decryption Error</p>
-                <small>Check your Master Password.</small>
-            </div>`;
+            list.innerHTML = `<p style="color:var(--danger)">Encryption error. Data might be from an old version.</p>`;
             break;
         }
     }
@@ -179,7 +165,6 @@ function editItem(index, site, user, pass) {
     document.getElementById('editIndex').value = index;
     document.getElementById('formTitle').innerText = "Edit Account";
     document.getElementById('cancelBtn').classList.remove('hidden');
-    window.scrollTo(0,0);
 }
 
 function resetForm() {
@@ -198,11 +183,4 @@ async function deleteItem(index) {
     localStorage.setItem('vault', JSON.stringify(vault));
     loadVault();
     await pushToCloud();
-}
-
-function clearAll() {
-    if (confirm("Wipe local cache? (Cloud data remains safe)")) {
-        localStorage.clear();
-        location.reload();
-    }
 }
