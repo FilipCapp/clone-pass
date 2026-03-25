@@ -9,8 +9,14 @@ body {
     margin: 0; display: flex; justify-content: center; padding: 20px;
 }
 
-.container { width: 100%; max-width: 480px; }
+.container { width: 100%; max-width: 480px; position: relative; }
 .hidden { display: none !important; }
+
+.sync-tag {
+    position: absolute; top: -30px; right: 0; font-size: 0.7rem;
+    padding: 4px 8px; border-radius: 4px; background: var(--border); color: var(--text-muted);
+}
+.sync-online { background: #064e3b; color: var(--success); }
 
 .card { 
     background: var(--card-bg); padding: 24px; border-radius: 16px; 
@@ -20,9 +26,6 @@ body {
 
 h1, h2 { margin: 0; color: white; }
 .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
-
-.input-group { margin-bottom: 15px; }
-label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
 
 .input-field { 
     width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border);
@@ -34,10 +37,10 @@ button {
     border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;
 }
 
-button:hover { background: var(--primary-hover); opacity: 0.9; }
+button:hover { opacity: 0.9; transform: translateY(-1px); }
 
 .btn-outline { background: transparent; border: 1px solid var(--border); margin-top: 10px; }
-.btn-success { background: var(--success); width: auto; padding: 8px 16px; }
+.btn-success { background: var(--success); width: auto; padding: 8px 16px; font-size: 0.8rem; }
 .btn-danger { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; margin-top: 40px; }
 
 .vault-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -49,9 +52,9 @@ button:hover { background: var(--primary-hover); opacity: 0.9; }
     margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
 }
 
-.item-site { font-weight: 600; display: block; }
-.item-user { font-size: 0.85rem; color: var(--primary); }
-.item-pass { font-family: monospace; font-size: 0.85rem; color: var(--text-muted); }
+.item-site { font-weight: 600; display: block; font-size: 1.1rem; }
+.item-user { font-size: 0.85rem; color: var(--primary); font-weight: 500; }
+.item-pass { font-family: monospace; font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 4px; }
 
 .actions { display: flex; gap: 8px; }
-.icon-btn { width: auto; padding: 8px; background: #0f172a; border: 1px solid var(--border); }
+.icon-btn { width: auto; padding: 8px; background: #0f172a; border: 1px solid var(--border); cursor: pointer; }
