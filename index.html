@@ -3,220 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PassVault Pro | Portable</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6d4aff; --primary-hover: #5b3ce0; --bg: #0f172a;
-            --card-bg: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
-            --danger: #ef4444; --border: #334155; --success: #22c55e;
-        }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 500px; }
-        .hidden { display: none !important; }
-        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid var(--border); margin-bottom: 20px; }
-        h2, h4 { margin: 0 0 15px 0; }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-        input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid var(--border); border-radius: 8px; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { background: var(--primary-hover); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); margin-top: 8px; }
-        .vault-item { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .item-info { display: flex; flex-direction: column; }
-        .item-site { font-weight: 600; }
-        .item-user { font-size: 0.8rem; color: var(--primary); }
-        .item-pass { font-family: monospace; color: var(--text-muted); font-size: 0.8rem; }
-        .actions { display: flex; gap: 5px; }
-        .icon-btn { background: #0f172a; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
-        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
-        #fileInput { display: none; }
-    </style>
+    <title>PassVault | GitHub Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<div class="container">
-    <div id="loginScreen" class="card">
-        <h2>PassVault</h2>
-        <div class="input-group">
-            <label>Master Password</label>
-            <input type="password" id="masterPass" placeholder="Unlock your encrypted vault">
-        </div>
-        <button onclick="unlockVault()">Unlock</button>
-        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
-        <button class="btn-outline" onclick="triggerImport()">Import Vault File</button>
-        <input type="file" id="fileInput" onchange="importVault(event)">
-    </div>
-
-    <div id="mainScreen" class="hidden">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3>Safe Vault</h3>
-            <div style="display:flex; gap:8px">
-                <button onclick="exportVault()" style="width:auto; padding: 5px 10px; background: var(--success); font-size: 0.7rem;">Export File</button>
-                <button onclick="location.reload()" style="width:auto; padding: 5px 10px;" class="btn-outline">Lock</button>
+    <div class="container">
+        <section id="loginScreen" class="card">
+            <h1>PassVault</h1>
+            <p class="subtitle">Secure, Zero-Knowledge Storage</p>
+            <div class="input-group">
+                <label>Master Password</label>
+                <input type="password" id="masterPass" placeholder="Unlock your vault">
             </div>
-        </div>
+            <button onclick="unlockVault()">Unlock Vault</button>
+            <div class="divider"><span>OR</span></div>
+            <button class="btn-outline" onclick="triggerImport()">Import .JSON Vault</button>
+            <input type="file" id="fileInput" hidden onchange="importVault(event)">
+        </section>
 
-        <div class="card">
-            <h4 id="formTitle">Add Account</h4>
-            <input type="hidden" id="editIndex" value="-1">
-            <input type="text" id="siteName" placeholder="Site (e.g. GitHub)" class="input-group">
-            <input type="text" id="siteUser" placeholder="Username" class="input-group">
-            <input type="text" id="sitePass" placeholder="Password" class="input-group">
-            <button id="saveBtn" onclick="saveSecret()">Save Securely</button>
-            <button id="cancelBtn" class="btn-outline hidden" onclick="resetForm()">Cancel</button>
-        </div>
+        <section id="mainScreen" class="hidden">
+            <header class="vault-header">
+                <h2>My Passwords</h2>
+                <div class="header-actions">
+                    <button onclick="exportVault()" class="btn-success">Export</button>
+                    <button onclick="location.reload()" class="btn-outline">Lock</button>
+                </div>
+            </header>
 
-        <div id="vaultList"></div>
+            <div class="card">
+                <h4 id="formTitle">Add New Account</h4>
+                <input type="hidden" id="editIndex" value="-1">
+                <input type="text" id="siteName" placeholder="Website Name" class="input-field">
+                <input type="text" id="siteUser" placeholder="Username / Email" class="input-field">
+                <div class="pass-input-container">
+                    <input type="text" id="sitePass" placeholder="Password" class="input-field">
+                </div>
+                <button id="saveBtn" onclick="saveSecret()">Save Account</button>
+                <button id="cancelBtn" class="btn-outline hidden" onclick="resetForm()">Cancel Edit</button>
+            </div>
+
+            <div id="vaultList"></div>
+            <button class="btn-danger" onclick="clearAll()">Wipe Local Data</button>
+        </section>
     </div>
-</div>
-
-<script>
-    let currentMasterKey = null;
-
-    async function deriveKey(password) {
-        const enc = new TextEncoder();
-        const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
-        return crypto.subtle.deriveKey(
-            { name: "PBKDF2", salt: enc.encode("vault-salt-v1"), iterations: 100000, hash: "SHA-256" },
-            baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
-        );
-    }
-
-    async function unlockVault() {
-        const pass = document.getElementById('masterPass').value;
-        if (!pass) return alert("Password required");
-        currentMasterKey = await deriveKey(pass);
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('mainScreen').classList.remove('hidden');
-        loadVault();
-    }
-
-    async function saveSecret() {
-        const site = document.getElementById('siteName').value;
-        const user = document.getElementById('siteUser').value;
-        const pass = document.getElementById('sitePass').value;
-        const editIndex = parseInt(document.getElementById('editIndex').value);
-
-        if (!site || !user || !pass) return alert("All fields required");
-
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, new TextEncoder().encode(JSON.stringify({ user, pass })));
-
-        const entry = {
-            site: site,
-            iv: btoa(String.fromCharCode(...iv)),
-            data: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
-        };
-
-        let vault = JSON.parse(localStorage.getItem('vault') || "[]");
-        if (editIndex > -1) vault[editIndex] = entry;
-        else vault.push(entry);
-
-        localStorage.setItem('vault', JSON.stringify(vault));
-        resetForm();
-        loadVault();
-    }
-
-    async function loadVault() {
-        const vault = JSON.parse(localStorage.getItem('vault') || "[]");
-        const list = document.getElementById('vaultList');
-        list.innerHTML = "";
-
-        for (let i = 0; i < vault.length; i++) {
-            const item = vault[i];
-            try {
-                const iv = new Uint8Array(atob(item.iv).split("").map(c => c.charCodeAt(0)));
-                const data = new Uint8Array(atob(item.data).split("").map(c => c.charCodeAt(0)));
-                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, currentMasterKey, data);
-                const { user, pass } = JSON.parse(new TextDecoder().decode(decrypted));
-
-                list.innerHTML += `
-                    <div class="vault-item">
-                        <div class="item-info">
-                            <span class="item-site">${item.site}</span>
-                            <span class="item-user">${user}</span>
-                            <span class="item-pass">${pass}</span>
-                        </div>
-                        <div class="actions">
-                            <button class="icon-btn" onclick="editItem(${i},'${item.site}','${user}','${pass}')">✏️</button>
-                            <button class="icon-btn" onclick="deleteItem(${i})">🗑️</button>
-                        </div>
-                    </div>`;
-            } catch (e) {
-                list.innerHTML = "<p style='color:red'>Decryption failed. Wrong Master Password?</p>";
-                break;
-            }
-        }
-    }
-
-    // --- IMPORT / EXPORT LOGIC ---
-
-    function exportVault() {
-        const data = localStorage.getItem('vault') || "[]";
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `vault_backup_${new Date().toISOString().slice(0,10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    function triggerImport() {
-        document.getElementById('fileInput').click();
-    }
-
-    function importVault(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const content = e.target.result;
-                // Basic validation: Check if it's JSON and has expected keys
-                const parsed = JSON.parse(content);
-                if (Array.isArray(parsed)) {
-                    localStorage.setItem('vault', content);
-                    alert("Vault imported successfully! Now enter your Master Password to unlock.");
-                } else {
-                    throw new Error();
-                }
-            } catch (err) {
-                alert("Invalid vault file format.");
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    // --- Helpers ---
-    function editItem(i, s, u, p) {
-        document.getElementById('formTitle').innerText = "Edit Account";
-        document.getElementById('siteName').value = s; document.getElementById('siteUser').value = u;
-        document.getElementById('sitePass').value = p; document.getElementById('editIndex').value = i;
-        document.getElementById('saveBtn').innerText = "Update Account";
-        document.getElementById('cancelBtn').classList.remove('hidden');
-    }
-
-    function resetForm() {
-        document.getElementById('formTitle').innerText = "Add Account";
-        document.getElementById('siteName').value = ''; document.getElementById('siteUser').value = '';
-        document.getElementById('sitePass').value = ''; document.getElementById('editIndex').value = "-1";
-        document.getElementById('saveBtn').innerText = "Save Securely";
-        document.getElementById('cancelBtn').classList.add('hidden');
-    }
-
-    function deleteItem(index) {
-        if (!confirm("Delete?")) return;
-        let vault = JSON.parse(localStorage.getItem('vault') || "[]");
-        vault.splice(index, 1);
-        localStorage.setItem('vault', JSON.stringify(vault));
-        loadVault();
-    }
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
