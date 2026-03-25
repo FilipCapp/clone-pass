@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClonePass v0.2.8 | Secure Cloud Vault</title>
+    <title>ClonePass v0.2.9 | Secure Cloud Vault</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#0f172a">
@@ -13,7 +13,7 @@
         <div id="syncStatus" class="sync-tag">Ready</div>
 
         <section id="loginScreen" class="card">
-            <h1>ClonePass v0.2.8</h1>
+            <h1>ClonePass v0.2.9</h1>
             <p class="subtitle">Cloud-Synced Password Manager</p>
             
             <div class="input-group">
@@ -62,21 +62,19 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // TODO: PASTE YOUR FIREBASE CONFIG HERE
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+          apiKey: "AIzaSyCheYVUMg42Q8Rul_6e3n0u4L1nC_8Kf8Y",
+          authDomain: "myvault-e154d.firebaseapp.com",
+          projectId: "myvault-e154d",
+          storageBucket: "myvault-e154d.firebasestorage.app",
+          messagingSenderId: "504378515493",
+          appId: "1:504378515493:web:e51359fffc8148d0d09fcc"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Expose Firebase tools to script.js
         window.db = db;
         window.auth = auth;
         window.dbDoc = doc;
@@ -85,7 +83,6 @@
         window.signUp = createUserWithEmailAndPassword;
         window.signIn = signInWithEmailAndPassword;
 
-        // Auto-detect login state
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.currentUser = user;
