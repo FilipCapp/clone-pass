@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PassVault | GitHub Edition</title>
+    <title>ClonePass | GitHub Edition</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <section id="loginScreen" class="card">
-            <h1>PassVault</h1>
-            <p class="subtitle">Secure, Zero-Knowledge Storage</p>
+            <h1>ClonePass</h1>
+            <p class="subtitle">kokot nemal som co robit</p>
             <div class="input-group">
-                <label>Master Password</label>
+                <label>Master Pass</label>
                 <input type="password" id="masterPass" placeholder="Unlock your vault">
             </div>
             <button onclick="unlockVault()">Unlock Vault</button>
             <div class="divider"><span>OR</span></div>
-            <button class="btn-outline" onclick="triggerImport()">Import .JSON Vault</button>
+            <button class="btn-outline" onclick="triggerImport()">Import .JSON</button>
             <input type="file" id="fileInput" hidden onchange="importVault(event)">
         </section>
 
