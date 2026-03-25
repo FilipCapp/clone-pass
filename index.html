@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClonePass | GitHub Edition</title>
+    <title>ClonePass v0.2 | Sync Enabled</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
+        <div id="syncStatus" class="sync-tag">Cloud Disconnected</div>
+
         <section id="loginScreen" class="card">
             <h1>ClonePass</h1>
-            <p class="subtitle">kokot nemal som co robit</p>
+            <p class="subtitle">ano...</p>
             <div class="input-group">
-                <label>Master Pass</label>
+                <label>Master Password</label>
                 <input type="password" id="masterPass" placeholder="Unlock your vault">
             </div>
-            <button onclick="unlockVault()">Unlock Vault</button>
+            <button onclick="unlockVault()">Unlock & Sync</button>
             <div class="divider"><span>OR</span></div>
-            <button class="btn-outline" onclick="triggerImport()">Import .JSON</button>
+            <button class="btn-outline" onclick="triggerImport()">Import .JSON Backup</button>
             <input type="file" id="fileInput" hidden onchange="importVault(event)">
         </section>
 
         <section id="mainScreen" class="hidden">
             <header class="vault-header">
-                <h2>My Passwords</h2>
+                <h2>My Vault</h2>
                 <div class="header-actions">
-                    <button onclick="exportVault()" class="btn-success">Export</button>
+                    <button onclick="exportVault()" class="btn-success">Backup</button>
                     <button onclick="location.reload()" class="btn-outline">Lock</button>
                 </div>
             </header>
 
             <div class="card">
-                <h4 id="formTitle">Add New Account</h4>
+                <h4 id="formTitle">Add Account</h4>
                 <input type="hidden" id="editIndex" value="-1">
-                <input type="text" id="siteName" placeholder="Website Name" class="input-field">
+                <input type="text" id="siteName" placeholder="Service (e.g. GitHub)" class="input-field">
                 <input type="text" id="siteUser" placeholder="Username / Email" class="input-field">
-                <div class="pass-input-container">
-                    <input type="text" id="sitePass" placeholder="Password" class="input-field">
-                </div>
-                <button id="saveBtn" onclick="saveSecret()">Save Account</button>
+                <input type="text" id="sitePass" placeholder="Password" class="input-field">
+                <button id="saveBtn" onclick="saveSecret()">Save & Sync</button>
                 <button id="cancelBtn" class="btn-outline hidden" onclick="resetForm()">Cancel Edit</button>
             </div>
 
@@ -47,6 +47,29 @@
             <button class="btn-danger" onclick="clearAll()">Wipe Local Data</button>
         </section>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCheYVUMg42Q8Rul_6e3n0u4L1nC_8Kf8Y",
+          authDomain: "myvault-e154d.firebaseapp.com",
+          projectId: "myvault-e154d",
+          storageBucket: "myvault-e154d.firebasestorage.app",
+          messagingSenderId: "504378515493",
+          appId: "1:504378515493:web:e51359fffc8148d0d09fcc"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.dbDoc = doc;
+        window.dbSet = setDoc;
+        window.dbGet = getDoc;
+        console.log("Firebase Ready");
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
