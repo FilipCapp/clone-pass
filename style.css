@@ -13,8 +13,24 @@ body {
 .hidden { display: none !important; }
 
 .sync-tag {
-    position: absolute; top: -30px; right: 0; font-size: 0.7rem;
-    padding: 4px 8px; border-radius: 4px; background: var(--border); color: var(--text-muted);
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+/* When online, make it glow slightly green */
+.sync-online { 
+    background: rgba(16, 185, 129, 0.1); 
+    color: var(--success); 
+    border-color: var(--success);
 }
 .sync-online { background: #064e3b; color: var(--success); }
 
