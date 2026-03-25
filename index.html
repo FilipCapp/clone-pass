@@ -13,15 +13,23 @@
 
         <section id="loginScreen" class="card">
             <h1>ClonePass</h1>
-            <p class="subtitle">ano...</p>
+            <p class="subtitle">Secure Cloud Vault</p>
+            
             <div class="input-group">
-                <label>Master Password</label>
-                <input type="password" id="masterPass" placeholder="Unlock your vault">
+                <input type="email" id="email" placeholder="Email Address" class="input-field">
+                <input type="password" id="loginPass" placeholder="Login Password" class="input-field">
             </div>
-            <button onclick="unlockVault()">Unlock & Sync</button>
-            <div class="divider"><span>OR</span></div>
-            <button class="btn-outline" onclick="triggerImport()">Import .JSON Backup</button>
-            <input type="file" id="fileInput" hidden onchange="importVault(event)">
+
+            <div class="auth-buttons">
+                <button onclick="handleAuth('login')">Login</button>
+                <button class="btn-outline" onclick="handleAuth('signup')">Create Account</button>
+            </div>
+            
+            <div id="masterPassSection" class="hidden" style="margin-top: 20px; border-top: 1px solid var(--border); pt-20">
+                <p style="font-size: 0.8rem; color: var(--success)">✓ Authenticated! Now enter Master Password:</p>
+                <input type="password" id="masterPass" placeholder="Master Password (to decrypt)" class="input-field">
+                <button onclick="unlockVault()">Unlock Vault</button>
+            </div>
         </section>
 
         <section id="mainScreen" class="hidden">
