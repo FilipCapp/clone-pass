@@ -1,6 +1,5 @@
 let currentMasterKey = null;
 
-// Generate encryption key from Master Password
 async function deriveKey(password) {
     const enc = new TextEncoder();
     const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
