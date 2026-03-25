@@ -1,5 +1,3 @@
----
-
 **ClonePass** is a lightweight, web-based password manager. It allows you to store your credentials securely in the cloud without ever compromising your Master Password. 
 
 ---
