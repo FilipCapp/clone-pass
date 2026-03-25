@@ -1,0 +1,15 @@
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Node/Build artifacts
+node_modules/
+dist/
+build/
+
+# Local env files
+.env
