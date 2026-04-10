@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClonePass v0.2.9 | Secure Cloud Vault</title>
+    <title>ClonePass | Unified Vault</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#0f172a">
 </head>
 <body>
@@ -13,8 +13,8 @@
         <div id="syncStatus" class="sync-tag">Ready</div>
 
         <section id="loginScreen" class="card">
-            <h1>ClonePass v0.2.9</h1>
-            <p class="subtitle">Cloud-Synced Password Manager</p>
+            <h1>ClonePass v0.3.0</h1>
+            <p class="subtitle">Secure Cloud Vault</p>
             
             <div class="input-group">
                 <input type="email" id="email" placeholder="Email Address" class="input-field">
@@ -25,42 +25,35 @@
                 <button onclick="handleAuth('login')">Login</button>
                 <button class="btn-outline" onclick="handleAuth('signup')">Sign Up</button>
             </div>
-            
-            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; text-align: center;">
-                Note: Your login password is used to encrypt your data.
-            </p>
         </section>
 
         <section id="mainScreen" class="hidden">
             <header class="vault-header">
                 <h2>My Vault</h2>
-                <div class="header-actions">
-                    <button onclick="logout()" class="btn-outline" style="width: auto; padding: 5px 15px;">Logout</button>
-                </div>
+                <button onclick="logout()" class="btn-outline" style="width: auto; padding: 6px 16px; margin: 0;">Logout</button>
             </header>
 
             <div class="card">
-                <h4 id="formTitle" style="margin-top:0">Add Account</h4>
+                <h4 id="formTitle" style="margin-top:0; margin-bottom: 15px;">Add New Account</h4>
                 <input type="hidden" id="editIndex" value="-1">
                 <input type="text" id="siteName" placeholder="Service (e.g. GitHub)" class="input-field">
                 <input type="text" id="siteUser" placeholder="Username / Email" class="input-field">
-                <input type="text" id="sitePass" placeholder="Password" class="input-field">
+                <input type="password" id="sitePass" placeholder="Password" class="input-field">
+                
                 <button id="saveBtn" onclick="saveSecret()">Save & Sync</button>
                 <button id="cancelBtn" class="btn-outline hidden" onclick="resetForm()">Cancel Edit</button>
             </div>
 
             <div id="vaultList"></div>
             
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-danger" style="width: auto; font-size: 0.8rem;" onclick="clearAll()">Clear Local Cache</button>
-            </div>
+            <button class="btn-danger" onclick="clearAll()">Wipe Local Cache</button>
         </section>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCheYVUMg42Q8Rul_6e3n0u4L1nC_8Kf8Y",
@@ -72,27 +65,16 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        window.db = db;
-        window.auth = auth;
-        window.dbDoc = doc;
-        window.dbSet = setDoc;
-        window.dbGet = getDoc;
+        window.db = getFirestore(app);
+        window.auth = getAuth(app);
+        window.dbDoc = doc; window.dbSet = setDoc; window.dbGet = getDoc;
         window.signUp = createUserWithEmailAndPassword;
         window.signIn = signInWithEmailAndPassword;
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.currentUser = user;
-                console.log("User Authenticated:", user.email);
-            } else {
-                window.currentUser = null;
-            }
+        onAuthStateChanged(window.auth, (user) => {
+            window.currentUser = user || null;
         });
     </script>
-    
     <script src="script.js"></script>
 </body>
 </html>
